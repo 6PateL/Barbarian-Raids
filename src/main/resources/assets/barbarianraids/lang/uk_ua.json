@@ -1,0 +1,7 @@
+{
+  "msg.barbarianraids.raid_village": "Варвари йдуть на поселення поруч із вами!",
+  "msg.barbarianraids.raid_track": "Варвари прямують до залізниці!",
+  "msg.barbarianraids.boss_dead": "Бос варварів загинув! Структура: %s, координати: X %s, Y %s, Z %s. Набіги з цього лігва припинені.",
+  "item.barbarianraids.book_title": "Лігво варварів",
+  "item.barbarianraids.book_text": "Рейдери прийшли з лігва «%s» за координатами:\nX: %s\nY: %s\nZ: %s\n(%s)"
+}

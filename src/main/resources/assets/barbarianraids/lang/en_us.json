@@ -1,0 +1,7 @@
+{
+  "msg.barbarianraids.raid_village": "Barbarians are marching on a settlement near you!",
+  "msg.barbarianraids.raid_track": "Barbarians are heading for the railway!",
+  "msg.barbarianraids.boss_dead": "The barbarian boss has fallen! Structure: %s, at X %s, Y %s, Z %s. Raids from this hideout are over.",
+  "item.barbarianraids.book_title": "Barbarian Hideout",
+  "item.barbarianraids.book_text": "The raiders came from the hideout \"%s\" at:\nX: %s\nY: %s\nZ: %s\n(%s)"
+}

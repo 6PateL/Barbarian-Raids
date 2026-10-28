@@ -1,0 +1,44 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="MIT"
+
+[[mods]]
+modId="barbarianraids"
+version="${mod_version}"
+displayName="Barbarian Raids"
+description='''Addon for Hostile Civilization: rarer spawns, boss-led raids on villages, Recruits settlements and Create tracks.'''
+
+[[dependencies.barbarianraids]]
+    modId="forge"
+    mandatory=true
+    versionRange="[47,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.barbarianraids]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1,1.21)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.barbarianraids]]
+    modId="hostile_civilization"
+    mandatory=true
+    versionRange="[4.5,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.barbarianraids]]
+    modId="create"
+    mandatory=true
+    versionRange="[6.0.0,)"
+    ordering="AFTER"
+    side="BOTH"
+
+[[dependencies.barbarianraids]]
+    modId="recruits"
+    mandatory=true
+    versionRange="[1.15.2,)"
+    ordering="AFTER"
+    side="BOTH"
