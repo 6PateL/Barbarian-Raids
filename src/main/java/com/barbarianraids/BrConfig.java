@@ -12,6 +12,14 @@ public class BrConfig {
 
     public static final ForgeConfigSpec.BooleanValue ATTACK_VILLAGERS_AND_RECRUITS;
     public static final ForgeConfigSpec.BooleanValue FIGHT_MONSTERS;
+    public static final ForgeConfigSpec.BooleanValue VR_ENABLED;
+    public static final ForgeConfigSpec.IntValue VR_MIN_DAYS;
+    public static final ForgeConfigSpec.IntValue VR_MAX_DAYS;
+    public static final ForgeConfigSpec.IntValue VR_COUNT;
+    public static final ForgeConfigSpec.IntValue VR_SEARCH_RADIUS;
+    public static final ForgeConfigSpec.IntValue VR_SOURCE_RADIUS;
+    public static final ForgeConfigSpec.IntValue VR_SPAWN_DISTANCE;
+    public static final ForgeConfigSpec.BooleanValue VR_PLAYER_FACTIONS;
     public static final ForgeConfigSpec.BooleanValue RECRUITS_ATTACK_FACTIONS;
     public static final ForgeConfigSpec.BooleanValue RECRUIT_IGNORE_UNDERGROUND;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> EXTRA_ENEMY_NAMESPACES;
@@ -96,6 +104,22 @@ public class BrConfig {
                 .defineInRange("raidBossHealthMultiplier", 2.0D, 1.0D, 50.0D);
         ANNOUNCE_RAIDS = b.comment("Warn players within 128 blocks of the target.")
                 .define("announceRaids", true);
+        b.pop();
+
+        b.push("villageRaids");
+        VR_ENABLED = b.comment("Scheduled raids on Recruits Villages settlements (needs the recruitsvillages mod).")
+                .define("enabled", true);
+        VR_MIN_DAYS = b.comment("Minimum in-game days between two village raid waves.").defineInRange("minDays", 2, 1, 60);
+        VR_MAX_DAYS = b.comment("Maximum in-game days between two village raid waves.").defineInRange("maxDays", 3, 1, 60);
+        VR_COUNT = b.comment("How many of the villages nearest to the player are raided in one wave.").defineInRange("villagesPerWave", 3, 1, 10);
+        VR_SEARCH_RADIUS = b.comment("Only villages within this many blocks of the player can be picked (they must be loaded to be raided).")
+                .defineInRange("searchRadius", 320, 32, 2000);
+        VR_SOURCE_RADIUS = b.comment("A barbarian structure (hideout) within this many blocks of the village sends its own soldiers; otherwise homeless barbarians come.")
+                .defineInRange("structureRadius", 600, 32, 3000);
+        VR_SPAWN_DISTANCE = b.comment("Raiders appear this many blocks from the village centre (and walk in).")
+                .defineInRange("spawnDistance", 64, 24, 128);
+        VR_PLAYER_FACTIONS = b.comment("Also raid villages that belong to a player faction.")
+                .define("includePlayerFactions", false);
         b.pop();
 
         b.push("rails");

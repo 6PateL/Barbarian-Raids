@@ -3,5 +3,10 @@
   "msg.barbarianraids.raid_track": "Варвари прямують до залізниці!",
   "msg.barbarianraids.boss_dead": "Бос варварів загинув! Структура: %s, координати: X %s, Y %s, Z %s. Набіги з цього лігва припинені.",
   "item.barbarianraids.book_title": "Лігво варварів",
-  "item.barbarianraids.book_text": "Рейдери прийшли з лігва «%s» за координатами:\nX: %s\nY: %s\nZ: %s\n(%s)"
+  "item.barbarianraids.book_text": "Рейдери прийшли з лігва «%s» за координатами:\nX: %s\nY: %s\nZ: %s\n(%s)",
+  "item.barbarianraids.raid_horn": "Ріг рейду (дебаг)",
+  "msg.barbarianraids.horn_none": "Не знайдено жодного села Recruits Villages.",
+  "msg.barbarianraids.horn_unloaded": "Село поруч не завантажене, підійдіть ближче.",
+  "msg.barbarianraids.vraid_structure": "Рейд! %s воїнів із лігва «%s» (X %s, Z %s) йдуть на село «%s» (X %s, Y %s, Z %s)!",
+  "msg.barbarianraids.vraid_homeless": "Рейд! %s безхатьків-варварів йдуть на село «%s» (X %s, Y %s, Z %s)!"
 }

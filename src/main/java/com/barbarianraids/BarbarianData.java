@@ -23,10 +23,12 @@ public class BarbarianData extends SavedData {
         public long nextRaid;
         public double score;
         public String structure = "";
+        public final java.util.Set<String> types = new java.util.LinkedHashSet<>();
     }
 
     public final Map<String, Boss> bosses = new HashMap<>();
     public final Map<String, Integer> spawned = new HashMap<>();
+    public long nextVillageRaid = 0L;
 
     public static BarbarianData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(BarbarianData::load, BarbarianData::new, NAME);
@@ -45,8 +47,13 @@ public class BarbarianData extends SavedData {
             b.nextRaid = c.getLong("next");
             b.score = c.getDouble("score");
             b.structure = c.getString("structure");
+            ListTag ty = c.getList("types", Tag.TAG_STRING);
+            for (int k = 0; k < ty.size(); k++) {
+                b.types.add(ty.getString(k));
+            }
             d.bosses.put(c.getString("key"), b);
         }
+        d.nextVillageRaid = tag.getLong("nextVillageRaid");
         CompoundTag sp = tag.getCompound("spawned");
         for (String k : sp.getAllKeys()) {
             d.spawned.put(k, sp.getInt(k));
@@ -68,9 +75,15 @@ public class BarbarianData extends SavedData {
             c.putLong("next", b.nextRaid);
             c.putDouble("score", b.score);
             c.putString("structure", b.structure == null ? "" : b.structure);
+            ListTag ty = new ListTag();
+            for (String t : b.types) {
+                ty.add(net.minecraft.nbt.StringTag.valueOf(t));
+            }
+            c.put("types", ty);
             list.add(c);
         }
         tag.put("bosses", list);
+        tag.putLong("nextVillageRaid", nextVillageRaid);
         CompoundTag sp = new CompoundTag();
         for (Map.Entry<String, Integer> e : spawned.entrySet()) {
             sp.putInt(e.getKey(), e.getValue());

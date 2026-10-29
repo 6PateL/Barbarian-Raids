@@ -77,6 +77,10 @@ public class RaidGoal extends Goal {
     private void endRaid() {
         CompoundTag d = mob.getPersistentData();
         clearRaid(d);
+        if (!d.contains(Factions.HOME)) {
+            mob.discard(); // homeless raiders just melt away
+            return;
+        }
         d.putBoolean(Factions.RETURNING, true);
     }
 
@@ -94,6 +98,10 @@ public class RaidGoal extends Goal {
         if (!raiding()) {
             if (returning()) {
                 BlockPos home = BlockPos.of(d.getLong(Factions.HOME));
+                if (mob.blockPosition().distSqr(home) > 150.0D * 150.0D) {
+                    mob.discard(); // too far to walk back: retreat out of sight
+                    return;
+                }
                 if (mob.blockPosition().distSqr(home) < 36.0D) {
                     d.remove(Factions.RETURNING);
                 } else if (tick % 20 == 0) {

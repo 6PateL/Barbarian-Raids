@@ -66,7 +66,8 @@ public class BossManager {
         addGoals(mob);
 
         CompoundTag d = mob.getPersistentData();
-        if ("NATURAL".equals(d.getString(Factions.ORIGIN))) {
+        String origin = d.getString(Factions.ORIGIN);
+        if ("NATURAL".equals(origin) || "RAID".equals(origin)) {
             return; // wild barbarians have no hideout
         }
         BarbarianData data = BarbarianData.get(level.getServer());
@@ -82,6 +83,12 @@ public class BossManager {
         if (boss != null && boss.dead) {
             pacify(mob);
             return;
+        }
+        if (boss != null && boss.types.size() < 8 && !Factions.isLeaderClass(mob)) {
+            var tk = net.minecraftforge.registries.ForgeRegistries.ENTITY_TYPES.getKey(mob.getType());
+            if (tk != null && boss.types.add(tk.toString())) {
+                data.setDirty();
+            }
         }
         if (d.getBoolean(Factions.BOSS)) {
             if (boss == null || boss.uuid.equals(mob.getUUID())) {

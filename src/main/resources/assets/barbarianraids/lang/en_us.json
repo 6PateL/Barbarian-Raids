@@ -3,5 +3,10 @@
   "msg.barbarianraids.raid_track": "Barbarians are heading for the railway!",
   "msg.barbarianraids.boss_dead": "The barbarian boss has fallen! Structure: %s, at X %s, Y %s, Z %s. Raids from this hideout are over.",
   "item.barbarianraids.book_title": "Barbarian Hideout",
-  "item.barbarianraids.book_text": "The raiders came from the hideout \"%s\" at:\nX: %s\nY: %s\nZ: %s\n(%s)"
+  "item.barbarianraids.book_text": "The raiders came from the hideout \"%s\" at:\nX: %s\nY: %s\nZ: %s\n(%s)",
+  "item.barbarianraids.raid_horn": "Raid Horn (debug)",
+  "msg.barbarianraids.horn_none": "No Recruits Villages settlement found.",
+  "msg.barbarianraids.horn_unloaded": "The nearest village is not loaded, move closer.",
+  "msg.barbarianraids.vraid_structure": "Raid! %s soldiers from the hideout \"%s\" (X %s, Z %s) are marching on the village \"%s\" (X %s, Y %s, Z %s)!",
+  "msg.barbarianraids.vraid_homeless": "Raid! %s homeless barbarians are marching on the village \"%s\" (X %s, Y %s, Z %s)!"
 }

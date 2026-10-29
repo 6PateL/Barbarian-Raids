@@ -147,28 +147,9 @@ public class RaidManager {
 
     // ------------------------------------------------------------------ targets
 
+    /** Hideout bosses only send track-breaking raids; village raids are scheduled by VillageRaids. */
     private Target pickTarget(ServerLevel level, PathfinderMob boss) {
-        boolean tracksFirst = level.random.nextDouble() < BrConfig.TRACK_RAID_CHANCE.get();
-        Target first = tracksFirst ? trackTarget(level, boss) : settlementTarget(level, boss);
-        if (first != null) {
-            return first;
-        }
-        return tracksFirst ? settlementTarget(level, boss) : trackTarget(level, boss);
-    }
-
-    private Target settlementTarget(ServerLevel level, PathfinderMob boss) {
-        double r = BrConfig.TARGET_RADIUS.get();
-        AABB box = boss.getBoundingBox().inflate(r, 64.0D, r);
-        LivingEntity best = null;
-        double bd = Double.MAX_VALUE;
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, box, BossManager::isVictim)) {
-            double dd = e.distanceToSqr(boss);
-            if (dd < bd) {
-                bd = dd;
-                best = e;
-            }
-        }
-        return best == null ? null : new Target(0, best.blockPosition());
+        return trackTarget(level, boss);
     }
 
     private Target trackTarget(ServerLevel level, PathfinderMob boss) {
