@@ -29,6 +29,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.phys.AABB;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
@@ -36,6 +37,8 @@ import net.minecraftforge.event.entity.living.LivingDropsEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import it.unimi.dsi.fastutil.longs.LongSet;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -223,6 +226,58 @@ public class BossManager {
             }
         }
         return best;
+    }
+
+    // ------------------------------------------------------------------ one boss per hideout (safety net)
+
+    @SubscribeEvent
+    public void onServerTick(TickEvent.ServerTickEvent event) {
+        if (event.phase != TickEvent.Phase.END || event.getServer().getTickCount() % 100 != 0) {
+            return;
+        }
+        BarbarianData data = BarbarianData.get(event.getServer());
+        if (data.bosses.isEmpty()) {
+            return;
+        }
+        double r = BrConfig.BOSS_MERGE_RADIUS.get();
+        for (ServerLevel level : event.getServer().getAllLevels()) {
+            String dim = level.dimension().location().toString();
+            for (Map.Entry<String, BarbarianData.Boss> en : new ArrayList<>(data.bosses.entrySet())) {
+                BarbarianData.Boss boss = en.getValue();
+                if (boss.dead || !dim.equals(boss.dim) || !level.hasChunkAt(boss.home)) {
+                    continue;
+                }
+                AABB box = new AABB(boss.home).inflate(r, 128.0D, r);
+                List<PathfinderMob> tagged = level.getEntitiesOfClass(PathfinderMob.class, box,
+                        m -> m.isAlive() && Factions.isFaction(m) && m.getPersistentData().getBoolean(Factions.BOSS));
+                if (tagged.size() < 2) {
+                    continue;
+                }
+                PathfinderMob keep = null;
+                for (PathfinderMob m : tagged) {
+                    if (m.getUUID().equals(boss.uuid)) {
+                        keep = m;
+                        break;
+                    }
+                }
+                if (keep == null) {
+                    for (PathfinderMob m : tagged) {
+                        if (keep == null || m.getMaxHealth() > keep.getMaxHealth()) {
+                            keep = m;
+                        }
+                    }
+                    boss.uuid = keep.getUUID();
+                    data.setDirty();
+                }
+                keep.getPersistentData().putString(Factions.GROUP, en.getKey());
+                for (PathfinderMob m : tagged) {
+                    if (m != keep) {
+                        demote(m);
+                        m.getPersistentData().putString(Factions.GROUP, en.getKey());
+                    }
+                }
+            }
+        }
     }
 
     // ------------------------------------------------------------------ boss promotion
