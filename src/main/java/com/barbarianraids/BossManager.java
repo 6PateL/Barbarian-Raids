@@ -165,7 +165,8 @@ public class BossManager {
         FactionHunter(net.minecraft.world.entity.Mob m, int interval, boolean mustSee) {
             super(m, PathfinderMob.class, interval, mustSee, false,
                     t -> Factions.isFaction(t) && !t.getPersistentData().getBoolean(Factions.PACIFIED)
-                            && Math.abs(t.getY() - m.getY()) < 5.0D);
+                            && Math.abs(t.getY() - m.getY()) < 3.5D
+                            && (t.getY() >= m.getY() - 1.0D || m.hasLineOfSight(t)));
         }
     }
 

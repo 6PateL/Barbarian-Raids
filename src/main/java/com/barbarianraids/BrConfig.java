@@ -13,6 +13,7 @@ public class BrConfig {
     public static final ForgeConfigSpec.BooleanValue ATTACK_VILLAGERS_AND_RECRUITS;
     public static final ForgeConfigSpec.BooleanValue FIGHT_MONSTERS;
     public static final ForgeConfigSpec.BooleanValue RECRUITS_ATTACK_FACTIONS;
+    public static final ForgeConfigSpec.BooleanValue RECRUIT_IGNORE_UNDERGROUND;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> EXTRA_ENEMY_NAMESPACES;
     public static final ForgeConfigSpec.BooleanValue MONSTERS_ATTACK_FACTIONS;
     public static final ForgeConfigSpec.DoubleValue BOSS_HEALTH_MULTIPLIER;
@@ -55,6 +56,8 @@ public class BrConfig {
                 .defineList("extraEnemyNamespaces", java.util.List.of("flesh_that_hates", "fromanotherworld"), o -> o instanceof String);
         RECRUITS_ATTACK_FACTIONS = b.comment("Recruits (village and hired, except trading nobles) actively attack barbarians they see.")
                 .define("recruitsAttackFactions", true);
+        RECRUIT_IGNORE_UNDERGROUND = b.comment("Recruits never pick targets that are more than 6 blocks above/below them, or below them with no line of sight (fixes recruits staring/shooting at the floor, whatever mod caused it).")
+                .define("recruitIgnoreUnderground", true);
         FIGHT_MONSTERS = b.comment("Faction mobs attack monsters that are hostile to the player (zombies, skeletons...).")
                 .define("fightMonsters", true);
         MONSTERS_ATTACK_FACTIONS = b.comment("Ordinary hostile mobs attack faction mobs too.")

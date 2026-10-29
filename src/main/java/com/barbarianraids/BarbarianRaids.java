@@ -14,5 +14,6 @@ public class BarbarianRaids {
         MinecraftForge.EVENT_BUS.register(new SpawnControl());
         MinecraftForge.EVENT_BUS.register(new BossManager());
         MinecraftForge.EVENT_BUS.register(new RaidManager());
+        MinecraftForge.EVENT_BUS.register(new RecruitSanity());
     }
 }
