@@ -20,6 +20,8 @@ public class BrConfig {
     public static final ForgeConfigSpec.IntValue VR_SOURCE_RADIUS;
     public static final ForgeConfigSpec.IntValue VR_SPAWN_DISTANCE;
     public static final ForgeConfigSpec.BooleanValue VR_PLAYER_FACTIONS;
+    public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> VR_HOMELESS_TYPES;
+    public static final ForgeConfigSpec.BooleanValue VR_HOMELESS_NO_ARMOR;
     public static final ForgeConfigSpec.BooleanValue RECRUITS_ATTACK_FACTIONS;
     public static final ForgeConfigSpec.BooleanValue RECRUIT_IGNORE_UNDERGROUND;
     public static final ForgeConfigSpec.ConfigValue<java.util.List<? extends String>> EXTRA_ENEMY_NAMESPACES;
@@ -120,6 +122,10 @@ public class BrConfig {
                 .defineInRange("spawnDistance", 64, 24, 128);
         VR_PLAYER_FACTIONS = b.comment("Also raid villages that belong to a player faction.")
                 .define("includePlayerFactions", false);
+        VR_HOMELESS_TYPES = b.comment("Entity ids used for homeless raiders. Empty = automatic: the weakest Hostile Civilization castaways (castaway_1 .. castaway_12), no leaders, no level 2/3, no masked.")
+                .defineList("homelessTypes", java.util.List.of(), o -> o instanceof String);
+        VR_HOMELESS_NO_ARMOR = b.comment("Strip armor from homeless raiders so they stay weak (armor randomizers may add it).")
+                .define("homelessNoArmor", true);
         b.pop();
 
         b.push("rails");

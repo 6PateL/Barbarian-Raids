@@ -222,6 +222,13 @@ public class VillageRaids {
             d.putInt(Factions.BUDGET, BrConfig.TRACK_BLOCKS_PER_RAIDER.get());
             m.setPersistenceRequired();
             level.addFreshEntity(m);
+            if (src == null && BrConfig.VR_HOMELESS_NO_ARMOR.get()) {
+                for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{
+                        net.minecraft.world.entity.EquipmentSlot.HEAD, net.minecraft.world.entity.EquipmentSlot.CHEST,
+                        net.minecraft.world.entity.EquipmentSlot.LEGS, net.minecraft.world.entity.EquipmentSlot.FEET}) {
+                    m.setItemSlot(slot, net.minecraft.world.item.ItemStack.EMPTY);
+                }
+            }
             party.add(m);
         }
         if (party.isEmpty()) {
@@ -277,11 +284,13 @@ public class VillageRaids {
     private PathfinderMob createHomeless(ServerLevel level) {
         if (homelessTypes == null) {
             homelessTypes = new ArrayList<>();
+            List<? extends String> custom = BrConfig.VR_HOMELESS_TYPES.get();
             for (var en : ForgeRegistries.ENTITY_TYPES.getEntries()) {
                 ResourceLocation id = en.getKey().location();
-                String p = id.getPath();
-                if ("hostile_civilization".equals(id.getNamespace()) && (p.startsWith("castaway") || p.startsWith("masked"))
-                        && !p.contains("leader") && !p.contains("friendly") && !p.contains("spawner") && !p.contains("projectile")) {
+                boolean ok = custom.isEmpty()
+                        ? "hostile_civilization".equals(id.getNamespace()) && id.getPath().matches("castaway_?\\d+")
+                        : custom.contains(id.toString());
+                if (ok) {
                     homelessTypes.add(en.getValue());
                 }
             }
