@@ -8,5 +8,17 @@
   "msg.barbarianraids.horn_none": "No Recruits Villages settlement found.",
   "msg.barbarianraids.horn_unloaded": "The nearest village is not loaded, move closer.",
   "msg.barbarianraids.vraid_structure": "Raid! %s soldiers from the hideout \"%s\" (X %s, Z %s) are marching on the village \"%s\" (X %s, Y %s, Z %s)!",
-  "msg.barbarianraids.vraid_homeless": "Raid! %s homeless barbarians are marching on the village \"%s\" (X %s, Y %s, Z %s)!"
+  "msg.barbarianraids.vraid_homeless": "Raid! %s homeless barbarians are marching on the village \"%s\" (X %s, Y %s, Z %s)!",
+  "msg.barbarianraids.vraid_strong": "REINFORCED BARBARIAN RAID! More of them, and stronger!",
+  "msg.barbarianraids.vraid_over": "The village \"%s\" is destroyed. The raid is over, the barbarians leave.",
+  "bar.barbarianraids.soon": "Barbarian raid in %s",
+  "bar.barbarianraids.soon_strong": "REINFORCED barbarian raid in %s",
+  "msg.barbarianraids.horn_mode": "Mode: %s",
+  "msg.barbarianraids.horn_mode.0": "raid the nearest village",
+  "msg.barbarianraids.horn_mode.1": "reinforced raid on the nearest village",
+  "msg.barbarianraids.horn_mode.2": "bring the scheduled raid closer (-5 min)",
+  "msg.barbarianraids.horn_mode.3": "push the scheduled raid back (+5 min)",
+  "msg.barbarianraids.horn_sooner": "Raid moved closer: %s left",
+  "msg.barbarianraids.horn_later": "Raid pushed back: %s left",
+  "msg.barbarianraids.horn_hint": "Right click to use, Shift + right click to switch the mode"
 }

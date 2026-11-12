@@ -20,15 +20,35 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * Every 2-3 days the three Recruits Villages nearest to a player are raided. The raiders come from the nearest barbarian
- * structure (its own soldiers) or, when there is none in range, are homeless barbarians.
+ * Every 3-4 days (random moment) the three Recruits Villages nearest to a player are raided. The raiders come from the
+ * nearest barbarian structure (its own soldiers) or, when there is none in range, are homeless barbarians. After 3-6
+ * ordinary waves a reinforced one comes (more and stronger raiders). A raid is over as soon as its village is destroyed:
+ * the raiders then go home (homeless ones melt away).
  */
 public class VillageRaids {
     public static VillageRaids INSTANCE;
 
     private static final long DAY = 24000L;
 
-    private record Pending(BlockPos center, String name, long deadline) {}
+    private record Pending(BlockPos center, String name, long deadline, boolean strong) {}
+
+    /** A raid in progress: when its village disappears from the Recruits Villages data, the raid is over. */
+    private record Active(BlockPos center, String name, long end) {}
+
+    private final List<Active> active = new ArrayList<>();
+    private static final java.util.Set<Long> OVER = new java.util.HashSet<>();
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("barbarianraids");
+    private final net.minecraft.server.level.ServerBossEvent bar = new net.minecraft.server.level.ServerBossEvent(
+            Component.empty(), net.minecraft.world.BossEvent.BossBarColor.YELLOW, net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS);
+
+    private static long key(int x, int z) {
+        return ((long) x << 32) ^ (z & 0xFFFFFFFFL);
+    }
+
+    /** True when the village at these (raid target) coordinates has been destroyed during the raid. */
+    public static boolean isOver(int x, int z) {
+        return !OVER.isEmpty() && OVER.contains(key(x, z));
+    }
 
     private final List<Pending> pending = new ArrayList<>();
     private int counter = 0;
@@ -42,12 +62,20 @@ public class VillageRaids {
 
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || ++counter % 100 != 0 || !BrConfig.VR_ENABLED.get()) {
+        if (event.phase != TickEvent.Phase.END || !BrConfig.VR_ENABLED.get()) {
+            return;
+        }
+        counter++;
+        if (counter % 20 == 0) {
+            warn(event.getServer());
+        }
+        if (counter % 100 != 0) {
             return;
         }
         MinecraftServer server = event.getServer();
         ServerLevel level = server.overworld();
         long now = level.getGameTime();
+        watchVillages(server, now);
 
         // retry raids whose spawn area was not loaded yet
         if (!pending.isEmpty()) {
@@ -57,7 +85,7 @@ public class VillageRaids {
                 if (now > p.deadline()) {
                     continue;
                 }
-                if (!spawnRaid(server, level, p.name(), p.center())) {
+                if (!spawnRaid(server, level, p.name(), p.center(), p.strong())) {
                     pending.add(p);
                 }
             }
@@ -72,18 +100,103 @@ public class VillageRaids {
         if (now < data.nextVillageRaid || server.getPlayerList().getPlayers().isEmpty()) {
             return;
         }
-        int launched = launchWave(server, level);
+        if (data.untilStrong < 0) {
+            data.untilStrong = rollStrong(level);
+        }
+        boolean strong = data.untilStrong == 0;
+        int launched = launchWave(server, level, strong);
+        if (launched > 0) {
+            data.untilStrong = strong ? rollStrong(level) : data.untilStrong - 1;
+            LOG.info("[BarbarianRaids] village raid wave: {} village(s), reinforced={}, ordinary waves before the next reinforced one: {}",
+                    launched, strong, data.untilStrong);
+        }
         data.nextVillageRaid = now + (launched > 0 ? interval(level) : 6000L);
         data.setDirty();
     }
 
+    /** A random moment between min and max days (not a whole number of days). */
     private static long interval(ServerLevel level) {
-        int min = Math.min(BrConfig.VR_MIN_DAYS.get(), BrConfig.VR_MAX_DAYS.get());
-        int max = Math.max(BrConfig.VR_MIN_DAYS.get(), BrConfig.VR_MAX_DAYS.get());
-        return (min + level.random.nextInt(max - min + 1)) * DAY;
+        long min = Math.min(BrConfig.VR_MIN_DAYS.get(), BrConfig.VR_MAX_DAYS.get()) * DAY;
+        long max = Math.max(BrConfig.VR_MIN_DAYS.get(), BrConfig.VR_MAX_DAYS.get()) * DAY;
+        return min + (max > min ? level.random.nextInt((int) (max - min) + 1) : 0);
     }
 
-    private int launchWave(MinecraftServer server, ServerLevel level) {
+    private static int rollStrong(ServerLevel level) {
+        int min = Math.min(BrConfig.VR_STRONG_MIN.get(), BrConfig.VR_STRONG_MAX.get());
+        int max = Math.max(BrConfig.VR_STRONG_MIN.get(), BrConfig.VR_STRONG_MAX.get());
+        return min + level.random.nextInt(max - min + 1);
+    }
+
+    /** Boss bar with a live countdown before the wave. */
+    private void warn(MinecraftServer server) {
+        int minutes = BrConfig.VR_WARN_MINUTES.get();
+        BarbarianData data = BarbarianData.get(server);
+        long left = data.nextVillageRaid - server.overworld().getGameTime();
+        if (minutes <= 0 || data.nextVillageRaid == 0L || left <= 0L || left > minutes * 1200L) {
+            if (!bar.getPlayers().isEmpty()) {
+                bar.removeAllPlayers();
+            }
+            return;
+        }
+        long s = left / 20L;
+        boolean strong = data.untilStrong == 0;
+        bar.setName(Component.translatable(strong ? "bar.barbarianraids.soon_strong" : "bar.barbarianraids.soon",
+                String.format("%d:%02d", s / 60L, s % 60L)));
+        bar.setColor(strong ? net.minecraft.world.BossEvent.BossBarColor.RED : net.minecraft.world.BossEvent.BossBarColor.YELLOW);
+        bar.setProgress(Math.max(0.0F, Math.min(1.0F, left / (minutes * 1200.0F))));
+        for (net.minecraft.server.level.ServerPlayer p : server.getPlayerList().getPlayers()) {
+            bar.addPlayer(p);
+        }
+    }
+
+    /** Raids whose village no longer exists are over. */
+    private void watchVillages(MinecraftServer server, long now) {
+        if (active.isEmpty()) {
+            if (!OVER.isEmpty()) {
+                OVER.clear();
+            }
+            return;
+        }
+        List<VillageSource.Village> all = VillageSource.list(server);
+        java.util.Iterator<Active> it = active.iterator();
+        while (it.hasNext()) {
+            Active a = it.next();
+            if (now > a.end() + 1200L) {
+                OVER.remove(key(a.center().getX(), a.center().getZ()));
+                it.remove();
+                continue;
+            }
+            if (OVER.contains(key(a.center().getX(), a.center().getZ())) || !VillageSource.available()) {
+                continue;
+            }
+            boolean alive = false;
+            for (VillageSource.Village v : all) {
+                if (horizontal(v.center(), a.center()) <= 48.0D * 48.0D) {
+                    alive = true;
+                    break;
+                }
+            }
+            if (!alive) {
+                OVER.add(key(a.center().getX(), a.center().getZ()));
+                LOG.info("[BarbarianRaids] village '{}' at {} is destroyed: the raid is over, raiders leave", a.name(), a.center().toShortString());
+                server.getPlayerList().broadcastSystemMessage(Component.translatable("msg.barbarianraids.vraid_over", a.name()), false);
+            }
+        }
+    }
+
+    /** Debug item: moves the next wave closer (negative) or further away (positive). Returns seconds left. */
+    public static long shift(MinecraftServer server, long ticks) {
+        BarbarianData data = BarbarianData.get(server);
+        long now = server.overworld().getGameTime();
+        if (data.nextVillageRaid == 0L) {
+            data.nextVillageRaid = now + 6000L;
+        }
+        data.nextVillageRaid = Math.max(now + 200L, data.nextVillageRaid + ticks);
+        data.setDirty();
+        return (data.nextVillageRaid - now) / 20L;
+    }
+
+    private int launchWave(MinecraftServer server, ServerLevel level, boolean strong) {
         List<VillageSource.Village> all = VillageSource.list(server);
         List<BlockPos> chosen = new ArrayList<>();
         int launched = 0;
@@ -102,10 +215,10 @@ public class VillageRaids {
                     continue;
                 }
                 chosen.add(v.center());
-                if (spawnRaid(server, level, v.name(), v.center())) {
+                if (spawnRaid(server, level, v.name(), v.center(), strong)) {
                     launched++;
                 } else {
-                    pending.add(new Pending(v.center(), v.name(), level.getGameTime() + 2400L));
+                    pending.add(new Pending(v.center(), v.name(), level.getGameTime() + 2400L, strong));
                     launched++;
                 }
             }
@@ -122,7 +235,7 @@ public class VillageRaids {
     // ------------------------------------------------------------------ debug item entry point
 
     /** Raids the village nearest to the given position right now. Returns a message key for the player. */
-    public static String raidNearest(MinecraftServer server, ServerLevel level, BlockPos from) {
+    public static String raidNearest(MinecraftServer server, ServerLevel level, BlockPos from, boolean strong) {
         if (INSTANCE == null) {
             return "msg.barbarianraids.horn_none";
         }
@@ -138,12 +251,12 @@ public class VillageRaids {
         if (best == null) {
             return "msg.barbarianraids.horn_none";
         }
-        return INSTANCE.spawnRaid(server, level, best.name(), best.center()) ? null : "msg.barbarianraids.horn_unloaded";
+        return INSTANCE.spawnRaid(server, level, best.name(), best.center(), strong) ? null : "msg.barbarianraids.horn_unloaded";
     }
 
     // ------------------------------------------------------------------ the raid itself
 
-    private boolean spawnRaid(MinecraftServer server, ServerLevel level, String villageName, BlockPos center) {
+    private boolean spawnRaid(MinecraftServer server, ServerLevel level, String villageName, BlockPos center, boolean strong) {
         BarbarianData data = BarbarianData.get(server);
         String dim = level.dimension().location().toString();
 
@@ -194,6 +307,9 @@ public class VillageRaids {
         int min = BrConfig.RAID_MIN_SOLDIERS.get();
         int max = Math.max(min, BrConfig.RAID_MAX_SOLDIERS.get());
         int count = min + level.random.nextInt(max - min + 1);
+        if (strong) {
+            count = (int) Math.round(count * BrConfig.VR_STRONG_COUNT.get());
+        }
         long end = level.getGameTime() + BrConfig.RAID_DURATION_MINUTES.get() * 1200L;
         String groupKey = src == null ? null : keyOf(data, src);
 
@@ -221,6 +337,11 @@ public class VillageRaids {
             d.putInt(Factions.TZ, target.getZ());
             d.putInt(Factions.BUDGET, BrConfig.TRACK_BLOCKS_PER_RAIDER.get());
             m.setPersistenceRequired();
+            if (strong) {
+                boost(m, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, BrConfig.VR_STRONG_HEALTH.get());
+                boost(m, net.minecraft.world.entity.ai.attributes.Attributes.ATTACK_DAMAGE, BrConfig.VR_STRONG_DAMAGE.get());
+                m.setHealth(m.getMaxHealth());
+            }
             level.addFreshEntity(m);
             if (src == null && BrConfig.VR_HOMELESS_NO_ARMOR.get()) {
                 for (net.minecraft.world.entity.EquipmentSlot slot : new net.minecraft.world.entity.EquipmentSlot[]{
@@ -244,6 +365,22 @@ public class VillageRaids {
             BossManager.makeRaidBoss(strongest, src.home);
         }
 
+        active.removeIf(a -> a.center().getX() == target.getX() && a.center().getZ() == target.getZ());
+        OVER.remove(key(target.getX(), target.getZ()));
+        active.add(new Active(target, villageName, end));
+        LOG.info("[BarbarianRaids] raid on '{}' at {}: {} raiders, reinforced={}, source={}", villageName, center.toShortString(),
+                party.size(), strong, src == null ? "homeless" : src.structure);
+        net.minecraft.sounds.SoundEvent horn = ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("minecraft", "event.raid.horn"));
+        for (net.minecraft.server.level.ServerPlayer p : server.getPlayerList().getPlayers()) {
+            if (horn != null) {
+                p.playNotifySound(horn, net.minecraft.sounds.SoundSource.HOSTILE, 64.0F, strong ? 0.6F : 1.0F);
+            }
+            if (strong) {
+                p.sendSystemMessage(Component.translatable("msg.barbarianraids.vraid_strong")
+                        .withStyle(net.minecraft.ChatFormatting.RED, net.minecraft.ChatFormatting.BOLD));
+            }
+        }
+
         Component msg = src != null
                 ? Component.translatable("msg.barbarianraids.vraid_structure", party.size(),
                         src.structure == null || src.structure.isEmpty() ? "?" : src.structure,
@@ -252,6 +389,13 @@ public class VillageRaids {
                         villageName, center.getX(), center.getY(), center.getZ());
         server.getPlayerList().broadcastSystemMessage(msg, false);
         return true;
+    }
+
+    private static void boost(PathfinderMob m, net.minecraft.world.entity.ai.attributes.Attribute attr, double mult) {
+        var inst = m.getAttribute(attr);
+        if (inst != null && mult > 1.0D) {
+            inst.setBaseValue(inst.getBaseValue() * mult);
+        }
     }
 
     private static String keyOf(BarbarianData data, BarbarianData.Boss b) {

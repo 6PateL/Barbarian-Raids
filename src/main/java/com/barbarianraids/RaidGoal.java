@@ -37,7 +37,8 @@ public class RaidGoal extends Goal {
     private boolean raiding() {
         CompoundTag d = mob.getPersistentData();
         return d.contains(Factions.RAID_END) && mob.level().getGameTime() < d.getLong(Factions.RAID_END)
-                && !d.getBoolean(Factions.PACIFIED);
+                && !d.getBoolean(Factions.PACIFIED)
+                && !VillageRaids.isOver(d.getInt(Factions.TX), d.getInt(Factions.TZ)); // the village is gone: go home
     }
 
     private boolean returning() {

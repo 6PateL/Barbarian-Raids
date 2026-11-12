@@ -17,6 +17,11 @@ public final class VillageSource {
 
     private VillageSource() {}
 
+    /** False when the Recruits Villages data cannot be read (then an empty list means nothing). */
+    public static boolean available() {
+        return !failed && ModList.get().isLoaded("recruitsvillages");
+    }
+
     public static List<Village> list(MinecraftServer server) {
         List<Village> out = new ArrayList<>();
         if (failed || !ModList.get().isLoaded("recruitsvillages")) {

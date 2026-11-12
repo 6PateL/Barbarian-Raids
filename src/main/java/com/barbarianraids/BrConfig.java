@@ -16,6 +16,12 @@ public class BrConfig {
     public static final ForgeConfigSpec.IntValue VR_MIN_DAYS;
     public static final ForgeConfigSpec.IntValue VR_MAX_DAYS;
     public static final ForgeConfigSpec.IntValue VR_COUNT;
+    public static final ForgeConfigSpec.IntValue VR_STRONG_MIN;
+    public static final ForgeConfigSpec.IntValue VR_STRONG_MAX;
+    public static final ForgeConfigSpec.DoubleValue VR_STRONG_COUNT;
+    public static final ForgeConfigSpec.DoubleValue VR_STRONG_HEALTH;
+    public static final ForgeConfigSpec.DoubleValue VR_STRONG_DAMAGE;
+    public static final ForgeConfigSpec.IntValue VR_WARN_MINUTES;
     public static final ForgeConfigSpec.IntValue VR_SEARCH_RADIUS;
     public static final ForgeConfigSpec.IntValue VR_SOURCE_RADIUS;
     public static final ForgeConfigSpec.IntValue VR_SPAWN_DISTANCE;
@@ -111,8 +117,14 @@ public class BrConfig {
         b.push("villageRaids");
         VR_ENABLED = b.comment("Scheduled raids on Recruits Villages settlements (needs the recruitsvillages mod).")
                 .define("enabled", true);
-        VR_MIN_DAYS = b.comment("Minimum in-game days between two village raid waves.").defineInRange("minDays", 2, 1, 60);
-        VR_MAX_DAYS = b.comment("Maximum in-game days between two village raid waves.").defineInRange("maxDays", 3, 1, 60);
+        VR_MIN_DAYS = b.comment("Minimum in-game days between two village raid waves (the exact moment is random between min and max).").defineInRange("intervalMinDays", 3, 1, 60);
+        VR_MAX_DAYS = b.comment("Maximum in-game days between two village raid waves.").defineInRange("intervalMaxDays", 4, 1, 60);
+        VR_STRONG_MIN = b.comment("A reinforced wave comes after at least this many ordinary waves (random between min and max).").defineInRange("reinforcedAfterMin", 3, 0, 100);
+        VR_STRONG_MAX = b.comment("A reinforced wave comes after at most this many ordinary waves.").defineInRange("reinforcedAfterMax", 6, 0, 100);
+        VR_STRONG_COUNT = b.comment("Reinforced wave: raiders per village are multiplied by this.").defineInRange("reinforcedCountMultiplier", 2.0D, 1.0D, 10.0D);
+        VR_STRONG_HEALTH = b.comment("Reinforced wave: max health multiplier of every raider.").defineInRange("reinforcedHealthMultiplier", 1.5D, 1.0D, 10.0D);
+        VR_STRONG_DAMAGE = b.comment("Reinforced wave: attack damage multiplier of every raider.").defineInRange("reinforcedDamageMultiplier", 1.3D, 1.0D, 10.0D);
+        VR_WARN_MINUTES = b.comment("A boss bar with a countdown warns all players this many minutes before a wave (0 = off).").defineInRange("warnMinutes", 5, 0, 120);
         VR_COUNT = b.comment("How many of the villages nearest to the player are raided in one wave.").defineInRange("villagesPerWave", 3, 1, 10);
         VR_SEARCH_RADIUS = b.comment("Only villages within this many blocks of the player can be picked (they must be loaded to be raided).")
                 .defineInRange("searchRadius", 320, 32, 2000);

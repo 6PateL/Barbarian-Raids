@@ -29,6 +29,8 @@ public class BarbarianData extends SavedData {
     public final Map<String, Boss> bosses = new HashMap<>();
     public final Map<String, Integer> spawned = new HashMap<>();
     public long nextVillageRaid = 0L;
+    /** Ordinary village raid waves left before a reinforced one (-1 = not rolled yet, 0 = the next wave is reinforced). */
+    public int untilStrong = -1;
 
     public static BarbarianData get(MinecraftServer server) {
         return server.overworld().getDataStorage().computeIfAbsent(BarbarianData::load, BarbarianData::new, NAME);
@@ -54,6 +56,7 @@ public class BarbarianData extends SavedData {
             d.bosses.put(c.getString("key"), b);
         }
         d.nextVillageRaid = tag.getLong("nextVillageRaid");
+        d.untilStrong = tag.contains("untilStrong") ? tag.getInt("untilStrong") : -1;
         CompoundTag sp = tag.getCompound("spawned");
         for (String k : sp.getAllKeys()) {
             d.spawned.put(k, sp.getInt(k));
@@ -84,6 +87,7 @@ public class BarbarianData extends SavedData {
         }
         tag.put("bosses", list);
         tag.putLong("nextVillageRaid", nextVillageRaid);
+        tag.putInt("untilStrong", untilStrong);
         CompoundTag sp = new CompoundTag();
         for (Map.Entry<String, Integer> e : spawned.entrySet()) {
             sp.putInt(e.getKey(), e.getValue());

@@ -8,5 +8,17 @@
   "msg.barbarianraids.horn_none": "Не знайдено жодного села Recruits Villages.",
   "msg.barbarianraids.horn_unloaded": "Село поруч не завантажене, підійдіть ближче.",
   "msg.barbarianraids.vraid_structure": "Рейд! %s воїнів із лігва «%s» (X %s, Z %s) йдуть на село «%s» (X %s, Y %s, Z %s)!",
-  "msg.barbarianraids.vraid_homeless": "Рейд! %s безхатьків-варварів йдуть на село «%s» (X %s, Y %s, Z %s)!"
+  "msg.barbarianraids.vraid_homeless": "Рейд! %s безхатьків-варварів йдуть на село «%s» (X %s, Y %s, Z %s)!",
+  "msg.barbarianraids.vraid_strong": "ПОСИЛЕНИЙ РЕЙД ВАРВАРІВ! Їх більше і вони сильніші!",
+  "msg.barbarianraids.vraid_over": "Село «%s» знищено. Рейд завершено, варвари відходять.",
+  "bar.barbarianraids.soon": "Рейд варварів через %s",
+  "bar.barbarianraids.soon_strong": "ПОСИЛЕНИЙ рейд варварів через %s",
+  "msg.barbarianraids.horn_mode": "Режим: %s",
+  "msg.barbarianraids.horn_mode.0": "рейд на найближче село",
+  "msg.barbarianraids.horn_mode.1": "посилений рейд на найближче село",
+  "msg.barbarianraids.horn_mode.2": "пришвидшити рейд за розкладом (−5 хв)",
+  "msg.barbarianraids.horn_mode.3": "відкласти рейд за розкладом (+5 хв)",
+  "msg.barbarianraids.horn_sooner": "Рейд пришвидшено: залишилось %s",
+  "msg.barbarianraids.horn_later": "Рейд відкладено: залишилось %s",
+  "msg.barbarianraids.horn_hint": "ПКМ — застосувати, Shift+ПКМ — змінити режим"
 }
