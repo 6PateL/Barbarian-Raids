@@ -33,8 +33,6 @@ public class BarbarianRaids {
     }
 
     private static void onCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
-            event.accept(RAID_HORN);
-        }
+        // ріг рейду — у вкладці «Інструменти налагодження» (Flesh Spread)
     }
 }
